@@ -1,0 +1,29 @@
+{
+  "name": "antigravity-mcp-image-server",
+  "version": "2.2.0",
+  "description": "MCP and REST image generation server (Google Imagen/Gemini API with Antigravity CLI fallback)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "mcp": "node server.js --stdio"
+  },
+  "keywords": [
+    "mcp",
+    "antigravity",
+    "image-generation",
+    "imagen",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "sharp": "^0.35.5",
+    "zod": "^3.25.1"
+  }
+}

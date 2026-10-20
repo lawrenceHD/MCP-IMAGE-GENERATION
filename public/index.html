@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Image Studio | Web & MCP</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --primary: #58a6ff;
+      --accent: #238636;
+      --text: #c9d1d9;
+      --text-white: #ffffff;
+      --muted: #8b949e;
+      --danger: #f85149;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 30px 20px; display: flex; justify-content: center; }
+    .container { max-width: 1100px; width: 100%; display: flex; flex-direction: column; gap: 24px; }
+    header { border-bottom: 1px solid var(--border); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 24px; color: var(--text-white); display: flex; align-items: center; gap: 10px; }
+    .badge { background: #1f6feb22; color: var(--primary); border: 1px solid #1f6feb; font-size: 12px; padding: 4px 10px; border-radius: 20px; }
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+    .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    label { font-size: 13px; font-weight: 600; color: var(--text-white); }
+    textarea, select, input { width: 100%; background: #0d1117; border: 1px solid var(--border); color: var(--text-white); padding: 12px; border-radius: 6px; font-size: 14px; outline: none; }
+    textarea:focus, select:focus { border-color: var(--primary); }
+    textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    button { background: var(--accent); color: white; border: none; padding: 14px; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    button:hover { background: #2ea043; }
+    button:disabled { background: #21262d; color: var(--muted); cursor: not-allowed; }
+    .ref-box { border: 1px dashed var(--border); border-radius: 6px; padding: 12px; background: #0b0e14; display: flex; flex-direction: column; gap: 10px; }
+    .ref-preview { display: flex; align-items: center; gap: 12px; }
+    .ref-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); }
+    .btn-small { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+    .btn-small:hover { color: var(--danger); border-color: var(--danger); }
+    .preview-box { min-height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed var(--border); border-radius: 8px; overflow: hidden; position: relative; background: #0b0e14; }
+    .preview-box img { width: 100%; height: 100%; object-fit: contain; }
+    .placeholder { color: var(--muted); font-size: 14px; text-align: center; padding: 20px; }
+    .spinner { display: none; width: 40px; height: 40px; border: 4px solid #30363d; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 12px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .code-preview { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; overflow-x: auto; max-height: 180px; color: #a5d6ff; }
+    .gallery-grid { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
+    .gallery-item { width: 50px; height: 50px; border-radius: 4px; border: 1px solid var(--border); cursor: pointer; object-fit: cover; flex-shrink: 0; }
+    .gallery-item:hover { border-color: var(--primary); transform: scale(1.05); }
+    .mode-indicator { font-size: 12px; padding: 3px 8px; border-radius: 4px; display: inline-block; font-weight: 600; }
+    .mode-create { background: #23863622; color: #3fb950; border: 1px solid #238636; }
+    .mode-edit { background: #a371f722; color: #d2a8ff; border: 1px solid #a371f7; }
+    .inspiration-panel { gap: 14px; }
+    .inspiration-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+    .inspiration-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .inspiration-actions button, .inspiration-actions a { flex: 1; min-width: 180px; }
+    .secondary-link { background: transparent; border: 1px solid var(--border); color: var(--primary); padding: 12px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600; text-align: center; }
+    .secondary-link:hover { border-color: var(--primary); background: #1f6feb22; }
+    .inspiration-status { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .inspiration-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    .inspiration-card { overflow: hidden; border: 1px solid var(--border); border-radius: 7px; background: #0d1117; }
+    .inspiration-card > a { display: block; color: var(--text-white); text-decoration: none; }
+    .inspiration-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #0b0e14; }
+    .inspiration-card-copy { padding: 10px; }
+    .inspiration-card-title { font-size: 13px; line-height: 1.4; font-weight: 600; }
+    .inspiration-card-source { color: var(--muted); font-size: 11px; margin-top: 5px; }
+    .inspiration-card .btn-small { width: calc(100% - 20px); margin: 0 10px 10px; }
+    .inspiration-note { color: var(--muted); font-size: 11px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>🎨 Antigravity Image Studio</h1>
+        <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Serveur MCP & API Web avec support Image-to-Image et modification d'images</p>
+      </div>
+      <span class="badge" id="modeBadge">Mode : Création</span>
+    </header>
+
+    <div class="layout">
+      <!-- Controls -->
+      <div class="panel">
+        <div>
+          <label for="prompt">Instructions / Description (Prompt) :</label>
+          <textarea id="prompt" placeholder="Décrivez votre image ou les modifications à apporter...">Une femme africaine élégante dans un salon contemporain ultra luxueux avec baie vitrée au crépuscule, éclairage cinématographique doux, symétrie parfaite, détails 4K.</textarea>
+        </div>
+
+        <!-- Reference Image Section (Image-to-Image) -->
+        <div class="ref-box">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label>🖼️ Image de référence (Optionnel - Image-to-Image) :</label>
+            <span id="refStatus" style="font-size: 11px; color: var(--muted);">Aucune image sélectionnée</span>
+          </div>
+
+          <div id="refSelectedView" style="display: none;" class="ref-preview">
+            <img id="refPreviewImg" class="ref-thumb" src="" alt="Référence" />
+            <div style="flex: 1; font-size: 12px; color: var(--text);">
+              <div id="refFilename" style="font-weight: 600;">image.jpg</div>
+              <div style="color: var(--muted); font-size: 11px;">Cette image servira de base de transformation.</div>
+            </div>
+            <button class="btn-small" onclick="clearReferenceImage()">✕ Supprimer</button>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+          <input type="file" id="fileUpload" accept="image/jpeg,image/png,image/webp" style="display: none;" onchange="handleFileUpload(event)" />
+            <button type="button" class="btn-small" style="flex: 1;" onclick="document.getElementById('fileUpload').click()">📁 Téléverser une photo...</button>
+            <button type="button" class="btn-small" style="flex: 1;" onclick="loadGallery()">🔄 Galerie bibliothèque</button>
+          </div>
+
+          <div id="galleryContainer" style="display: none;">
+            <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">Cliquez sur une image de votre dossier Pictures/Antigravity_Images :</div>
+            <div class="gallery-grid" id="galleryList"></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="style">Style visuel :</label>
+            <select id="style">
+              <option value="photorealistic" selected>Photoréaliste (8K HDR)</option>
+              <option value="cinematic">Cinématique (35mm)</option>
+              <option value="anime">Anime Japonais Moderne</option>
+              <option value="digital_art">Digital Concept Art</option>
+              <option value="3d_render">3D Render (Unreal Engine 5)</option>
+              <option value="minimalist">Minimaliste Épuré</option>
+              <option value="default">Standard Antigravity</option>
+            </select>
+          </div>
+          <div>
+            <label for="aspectRatio">Format / Ratio :</label>
+            <select id="aspectRatio">
+              <option value="16:9" selected>16:9 (Panoramique / Paysage)</option>
+              <option value="1:1">1:1 (Carré standard)</option>
+              <option value="9:16">9:16 (Vertical / Mobile)</option>
+              <option value="4:3">4:3 (Classique)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; margin-top: -6px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text);">
+            <input type="checkbox" id="forceRegen" style="width: auto; cursor: pointer; margin: 0;" />
+            <span>⚡ Forcer la régénération (ignorer le cache)</span>
+          </label>
+          <span id="cacheBadge" style="display: none; font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #23863633; color: #3fb950; border: 1px solid #238636;">Cache</span>
+        </div>
+
+        <button id="generateBtn" onclick="generate()">
+          <span id="btnText">⚡ Générer l'image</span>
+        </button>
+
+        <div>
+          <label>Exemple d'appel d'intégration (JavaScript / Fetch) :</label>
+          <pre class="code-preview" id="codeSample"><code>// Dans votre projet web :
+const res = await fetch('http://localhost:3333/api/generate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    prompt: "Mon idée...",
+    style: "cinematic",
+    aspect_ratio: "16:9",
+    reference_images: [] // ou ["chemin/image.jpg"] ou [base64]
+  })
+});
+const data = await res.json();
+console.log(data.image_url);</code></pre>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="panel">
+        <label>Aperçu du résultat en direct :</label>
+        <div class="preview-box" id="previewBox">
+          <div class="spinner" id="spinner"></div>
+          <p class="placeholder" id="placeholder">Cliquez sur « Générer » pour lancer l'agent Antigravity CLI en tâche de fond.</p>
+          <img id="resultImg" style="display: none;" alt="Image générée" />
+        </div>
+        <div id="metaBox" style="display: none;">
+          <label>Détails techniques :</label>
+          <pre class="code-preview" id="metaDetails"></pre>
+        </div>
+      </div>
+    </div>
+
+    <section class="panel inspiration-panel" aria-labelledby="inspirationTitle">
+      <div class="inspiration-heading">
+        <div>
+          <h2 id="inspirationTitle" style="font-size: 18px; color: var(--text-white);">Recherche d’inspiration visuelle</h2>
+          <p style="font-size: 12px; color: var(--muted); margin-top: 5px;">Trouve des références par sujet et style, puis ouvre la source avant de t’en inspirer.</p>
+        </div>
+        <span class="badge">Recherche Web / MCP</span>
+      </div>
+      <div class="row">
+        <div>
+          <label for="inspirationQuery">Sujet à rechercher :</label>
+          <input id="inspirationQuery" type="text" maxlength="300" placeholder="Ex. portrait éditorial, décoration africaine contemporaine..." />
+        </div>
+        <div>
+          <label for="inspirationSource">Source :</label>
+          <select id="inspirationSource">
+            <option value="pinterest" selected>Pinterest</option>
+            <option value="web">Images du Web</option>
+          </select>
+        </div>
+      </div>
+      <div class="inspiration-actions">
+        <button id="inspirationBtn" type="button" onclick="searchInspiration()">Chercher des références</button>
+        <a id="pinterestSearchLink" class="secondary-link" href="https://www.pinterest.com/search/pins/" target="_blank" rel="noopener noreferrer">Ouvrir la recherche Pinterest</a>
+      </div>
+      <p id="inspirationStatus" class="inspiration-status" role="status" aria-live="polite">La recherche en ligne nécessite une clé Brave Search API dans la configuration du serveur. Le lien Pinterest ouvre toujours la recherche native.</p>
+      <div id="inspirationResults" class="inspiration-grid" aria-live="polite"></div>
+      <p class="inspiration-note">Le sujet recherché est transmis au fournisseur sélectionné. Les vignettes sont liées à leur page source. Vérifie les droits et les conditions d’utilisation avant toute réutilisation. Pour Pinterest, l’API officielle de recherche est en bêta et accessible uniquement à certaines applications.</p>
+    </section>
+  </div>
+
+  <script>
+    let activeReference = null;
+    const privateImageUrls = new Map();
+    const privateImageRequests = new WeakMap();
+
+    // Load gallery on startup
+    // Optional API token (when API_TOKEN is set in .env): sessionStorage.setItem('apiToken', '...')
+    function authHeaders(extra = {}) {
+      let token = null;
+      try { token = sessionStorage.getItem('apiToken'); } catch {}
+      return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
+    }
+
+    function releasePrivateImage(img) {
+      privateImageRequests.delete(img);
+      const objectUrl = privateImageUrls.get(img);
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      privateImageUrls.delete(img);
+    }
+
+    function privateImageRequestUrl(url) {
+      try {
+        const target = new URL(url, window.location.href);
+        const current = new URL(window.location.href);
+        const localNames = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+        if (localNames.has(target.hostname.toLowerCase()) && localNames.has(current.hostname.toLowerCase()) &&
+            target.port === current.port) return `${target.pathname}${target.search}`;
+        return target.href;
+      } catch {
+        return url;
+      }
+    }
+
+    async function setPrivateImage(img, url) {
+      const requestId = Symbol('image-request');
+      privateImageRequests.set(img, requestId);
+      try {
+        const response = await fetch(privateImageRequestUrl(url), { headers: authHeaders(), cache: 'no-store' });
+        if (!response.ok) throw new Error(response.status === 401 ? 'Jeton API requis ou invalide.' : 'Image indisponible.');
+        const blob = await response.blob();
+        if (privateImageRequests.get(img) !== requestId || !img.isConnected) return;
+        releasePrivateImage(img);
+        const objectUrl = URL.createObjectURL(blob);
+        privateImageUrls.set(img, objectUrl);
+        img.src = objectUrl;
+      } finally {
+        if (privateImageRequests.get(img) === requestId) privateImageRequests.delete(img);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadGallery();
+      loadInspirationStatus();
+      updatePinterestSearchLink();
+      document.getElementById('prompt').addEventListener('input', updatePinterestSearchLink);
+      document.getElementById('inspirationQuery').addEventListener('input', updatePinterestSearchLink);
+      document.getElementById('style').addEventListener('change', updatePinterestSearchLink);
+    });
+
+    function getInspirationQuery() {
+      return (document.getElementById('inspirationQuery').value.trim() || document.getElementById('prompt').value.trim()).slice(0, 300);
+    }
+
+    function updatePinterestSearchLink() {
+      const query = getInspirationQuery();
+      const style = document.getElementById('style').value.replace(/[_-]+/g, ' ');
+      const url = new URL('https://www.pinterest.com/search/pins/');
+      url.searchParams.set('q', [query, style].filter(Boolean).join(' '));
+      document.getElementById('pinterestSearchLink').href = url.href;
+    }
+
+    async function loadInspirationStatus() {
+      const status = document.getElementById('inspirationStatus');
+      try {
+        const response = await fetch('/api/inspiration/status', { headers: authHeaders() });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (data.providers?.web && data.providers?.pinterest_api) {
+          status.textContent = 'Recherche active : Brave Image Search et API Pinterest configurés. Les références restent liées à leur source.';
+        } else if (data.providers?.pinterest_api) {
+          status.textContent = 'API Pinterest configurée (recherche partenaire en bêta). Les recherches Web demandent aussi BRAVE_SEARCH_API_KEY.';
+        } else if (data.providers?.web) {
+          status.textContent = 'Recherche active avec Brave Image Search. La sélection Pinterest filtre les résultats indexés ; ajoute un jeton Pinterest si ton application est admise à leur API bêta.';
+        } else {
+          status.textContent = 'Pour afficher les vignettes ici, ajoute BRAVE_SEARCH_API_KEY dans .env. Sans clé, tu peux déjà ouvrir la recherche Pinterest native.';
+        }
+      } catch {
+        status.textContent = 'Statut indisponible. Le lien Pinterest natif reste utilisable.';
+      }
+    }
+
+    async function searchInspiration() {
+      const query = getInspirationQuery();
+      const source = document.getElementById('inspirationSource').value;
+      const style = document.getElementById('style').value;
+      const button = document.getElementById('inspirationBtn');
+      const status = document.getElementById('inspirationStatus');
+      const results = document.getElementById('inspirationResults');
+      updatePinterestSearchLink();
+      results.replaceChildren();
+      if (!query) {
+        status.textContent = 'Saisis un sujet ou ajoute une description dans le prompt principal.';
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Recherche en cours…';
+      status.textContent = 'Recherche de références visuelles…';
+      try {
+        const response = await fetch('/api/inspiration/search', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ query, style, source, limit: 12 })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.error || 'La recherche a échoué.');
+        status.textContent = `${data.results.length} référence(s) · ${data.provider}${data.cached ? ' · cache local' : ''}. Clique une image pour ouvrir sa page source.`;
+        renderInspirationResults(data.results);
+      } catch (error) {
+        status.textContent = `${error.message} Tu peux aussi ouvrir Pinterest avec le lien ci-dessus.`;
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Chercher des références';
+      }
+    }
+
+    function renderInspirationResults(items) {
+      const container = document.getElementById('inspirationResults');
+      if (!items.length) {
+        const empty = document.createElement('p');
+        empty.className = 'inspiration-status';
+        empty.textContent = 'Aucune vignette trouvée. Essaie une recherche plus descriptive ou ouvre Pinterest directement.';
+        container.appendChild(empty);
+        return;
+      }
+
+      for (const item of items) {
+        const card = document.createElement('article');
+        card.className = 'inspiration-card';
+        const sourceLink = document.createElement('a');
+        sourceLink.href = item.source_url;
+        sourceLink.target = '_blank';
+        sourceLink.rel = 'noopener noreferrer';
+        sourceLink.referrerPolicy = 'no-referrer';
+
+        const image = document.createElement('img');
+        image.src = item.thumbnail_url;
+        image.alt = item.title || 'Référence visuelle';
+        image.loading = 'lazy';
+        image.referrerPolicy = 'no-referrer';
+        sourceLink.appendChild(image);
+
+        const copy = document.createElement('div');
+        copy.className = 'inspiration-card-copy';
+        const title = document.createElement('p');
+        title.className = 'inspiration-card-title';
+        title.textContent = item.title || 'Référence visuelle';
+        const source = document.createElement('p');
+        source.className = 'inspiration-card-source';
+        source.textContent = [item.source_name || 'Source externe', item.confidence ? `pertinence ${item.confidence}` : ''].filter(Boolean).join(' · ');
+        copy.append(title, source);
+        sourceLink.appendChild(copy);
+        card.appendChild(sourceLink);
+
+        const useButton = document.createElement('button');
+        useButton.type = 'button';
+        useButton.className = 'btn-small';
+        useButton.textContent = 'Ajouter comme piste au prompt';
+        useButton.addEventListener('click', () => addInspirationToPrompt(item));
+        card.appendChild(useButton);
+        container.appendChild(card);
+      }
+    }
+
+    function addInspirationToPrompt(item) {
+      const prompt = document.getElementById('prompt');
+      const title = (item.title || 'référence visuelle').replace(/[\r\n]+/g, ' ').slice(0, 180);
+      const host = (() => { try { return new URL(item.source_url).hostname; } catch { return item.source_name || 'source'; } })();
+      const direction = `Piste visuelle à interpréter librement : « ${title} » (${host}). Reprendre des idées de palette, de composition et de lumière pour créer une image originale, sans copier la référence.`;
+      prompt.value = prompt.value.trim() ? `${prompt.value.trim()}\n\n${direction}` : direction;
+      prompt.dispatchEvent(new Event('input', { bubbles: true }));
+      updatePinterestSearchLink();
+    }
+
+    async function loadGallery() {
+      try {
+        const res = await fetch('/api/library', { headers: authHeaders() });
+        if (!res.ok) throw new Error(res.status === 401 ? 'Jeton API requis ou invalide.' : 'Galerie indisponible.');
+        const data = await res.json();
+        const galleryList = document.getElementById('galleryList');
+        const galleryContainer = document.getElementById('galleryContainer');
+        const previousItems = new Map([...galleryList.querySelectorAll('img')].map((image) => [image.dataset.filename, image]));
+        galleryList.replaceChildren();
+
+        if (data.images && data.images.length > 0) {
+          data.images.forEach(img => {
+            const el = previousItems.get(img.filename) || document.createElement('img');
+            previousItems.delete(img.filename);
+            if (!el.dataset.filename) {
+              el.className = 'gallery-item';
+              el.dataset.filename = img.filename;
+              el.title = img.filename;
+              el.onerror = () => { el.title = 'Image indisponible'; };
+              el.onclick = () => selectReferenceFromUrl(img.url, img.filename);
+            }
+            galleryList.appendChild(el);
+            if (!privateImageUrls.has(el) && !privateImageRequests.has(el)) {
+              setPrivateImage(el, img.thumbnail_url || img.url).catch(() => {});
+            }
+          });
+          galleryContainer.style.display = 'block';
+        } else {
+          galleryContainer.style.display = 'none';
+        }
+        for (const image of previousItems.values()) releasePrivateImage(image);
+      } catch (e) {
+        console.warn('Could not load gallery:', e);
+      }
+    }
+
+    function selectReferenceFromUrl(url, filename) {
+      activeReference = filename;
+      const preview = document.getElementById('refPreviewImg');
+      setPrivateImage(preview, url).catch((error) => {
+        document.getElementById('refStatus').textContent = error.message;
+      });
+      document.getElementById('refFilename').textContent = filename;
+      document.getElementById('refSelectedView').style.display = 'flex';
+      document.getElementById('refStatus').textContent = 'Image liée';
+      updateMode(true);
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 8 * 1024 * 1024) {
+        clearReferenceImage();
+        document.getElementById('refStatus').textContent = 'Choisis une image JPEG, PNG ou WebP de 8 Mo maximum.';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        activeReference = e.target.result; // Base64 data URI
+        const preview = document.getElementById('refPreviewImg');
+        releasePrivateImage(preview);
+        preview.src = e.target.result;
+        document.getElementById('refFilename').textContent = file.name;
+        document.getElementById('refSelectedView').style.display = 'flex';
+        document.getElementById('refStatus').textContent = 'Fichier prêt (Base64)';
+        updateMode(true);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearReferenceImage() {
+      activeReference = null;
+      const preview = document.getElementById('refPreviewImg');
+      releasePrivateImage(preview);
+      preview.removeAttribute('src');
+      document.getElementById('refSelectedView').style.display = 'none';
+      document.getElementById('refStatus').textContent = 'Aucune image sélectionnée';
+      document.getElementById('fileUpload').value = '';
+      updateMode(false);
+    }
+
+    function updateMode(isEdit) {
+      const badge = document.getElementById('modeBadge');
+      const btnText = document.getElementById('btnText');
+      if (isEdit) {
+        badge.textContent = 'Mode : Modification Image-to-Image';
+        badge.className = 'badge mode-edit';
+        btnText.textContent = '🎨 Transformer / Modifier l\'image';
+      } else {
+        badge.textContent = 'Mode : Création';
+        badge.className = 'badge mode-create';
+        btnText.textContent = '⚡ Générer l\'image';
+      }
+    }
+
+    async function generate() {
+      const prompt = document.getElementById('prompt').value.trim();
+      const style = document.getElementById('style').value;
+      const aspectRatio = document.getElementById('aspectRatio').value;
+
+      if (!prompt) {
+        alert('Veuillez saisir des instructions.');
+        return;
+      }
+
+      const btn = document.getElementById('generateBtn');
+      const spinner = document.getElementById('spinner');
+      const placeholder = document.getElementById('placeholder');
+      const resultImg = document.getElementById('resultImg');
+      const metaBox = document.getElementById('metaBox');
+      const metaDetails = document.getElementById('metaDetails');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ Traitement en arrière-plan via Antigravity...</span>';
+      spinner.style.display = 'block';
+      placeholder.style.display = 'block';
+      placeholder.textContent = activeReference 
+        ? 'Transformation de votre image de référence en cours (30-60s)...' 
+        : 'Génération en cours en arrière-plan (30-60s)...';
+      resultImg.style.display = 'none';
+      releasePrivateImage(resultImg);
+      metaBox.style.display = 'none';
+
+      try {
+        const force = document.getElementById('forceRegen').checked;
+        const payload = {
+          prompt: prompt,
+          style: style,
+          aspect_ratio: aspectRatio,
+          reference_images: activeReference ? [activeReference] : [],
+          include_base64: false,
+          force: force
+        };
+
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Erreur inconnue');
+        }
+
+        const cacheBadge = document.getElementById('cacheBadge');
+        if (data.cached) {
+          cacheBadge.textContent = '⚡ Servi depuis le cache SHA-256 (0.01s)';
+          cacheBadge.style.display = 'inline-block';
+          cacheBadge.style.background = '#23863633';
+          cacheBadge.style.color = '#3fb950';
+          cacheBadge.style.borderColor = '#238636';
+        } else {
+          cacheBadge.textContent = `🚀 Généré via ${data.engine}`;
+          cacheBadge.style.display = 'inline-block';
+          cacheBadge.style.background = '#1f6feb33';
+          cacheBadge.style.color = '#58a6ff';
+          cacheBadge.style.borderColor = '#1f6feb';
+        }
+
+        if (data.base64) resultImg.src = data.base64;
+        else await setPrivateImage(resultImg, data.image_url);
+        resultImg.style.display = 'block';
+        placeholder.style.display = 'none';
+
+        metaDetails.textContent = JSON.stringify({
+          image_url: data.image_url,
+          filename: data.filename,
+          cached: data.cached || false,
+          engine: data.engine,
+          file_size: Math.round(data.file_size_bytes / 1024) + ' KB',
+          enhanced_prompt: data.enhanced_prompt
+        }, null, 2);
+        metaBox.style.display = 'block';
+
+        // Refresh gallery with newly created image
+        loadGallery();
+
+      } catch (err) {
+        placeholder.textContent = 'Erreur : ' + err.message;
+        placeholder.style.display = 'block';
+      } finally {
+        spinner.style.display = 'none';
+        btn.disabled = false;
+        btn.innerHTML = activeReference 
+          ? '<span>🎨 Transformer / Modifier l\'image</span>' 
+          : '<span>⚡ Générer l\'image</span>';
+      }
+    }
+  </script>
+</body>
+</html>
